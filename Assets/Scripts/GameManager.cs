@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
 
     [Header("Game References")]
-    public PlayerController player; // Ссылка на игрока
+    public PlayerController player;
 
     [Header("Game Settings")]
     public float scoreMultiplier = 1f;
@@ -19,7 +19,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // Если игрок не назначен в инспекторе, находим его автоматически
         if (player == null)
         {
             player = FindObjectOfType<PlayerController>();
@@ -44,7 +43,6 @@ public class GameManager : MonoBehaviour
     {
         if (player != null && isGameRunning)
         {
-            // Считаем очки только если игрок жив
             distanceTraveled += (player.transform.position.x - lastPlayerPosition.x);
             lastPlayerPosition = player.transform.position;
 
@@ -65,15 +63,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Вызывается когда игрок проигрывает
     public void GameOver()
     {
-        if (!isGameRunning) return; // Уже завершена
+        if (!isGameRunning) return;
 
         isGameRunning = false;
         Debug.Log($"Game Over! Final Score: {currentScore}");
 
-        // Останавливаем игрока
         if (player != null)
         {
             player.StopRunning();
