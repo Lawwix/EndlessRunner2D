@@ -5,12 +5,15 @@ public class PlayerController : MonoBehaviour
     [Header("Movement Settings")]
     public float jumpForce = 16f;
     public float runSpeed = 5f;
-    public float jumpTime = 0.3f; // Время удержания прыжка
+    public float jumpTime = 0.3f;
 
     [Header("Ground Check")]
     public Transform groundCheck;
     public float checkRadius = 0.2f;
     public LayerMask groundLayer;
+
+    [Header("Game Over Settings")]
+    public float fallThreshold = -10f; // Y координата, при которой игра заканчивается
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -28,8 +31,8 @@ public class PlayerController : MonoBehaviour
         if (!isGameRunning) return;
 
         CheckGrounded();
+        CheckFallDeath(); // Проверяем не упал ли игрок
 
-        // Начало прыжка
         if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && isGrounded)
         {
             isJumping = true;
@@ -37,7 +40,6 @@ public class PlayerController : MonoBehaviour
             Jump();
         }
 
-        // Удержание прыжка
         if ((Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)) && isJumping)
         {
             if (jumpTimeCounter > 0)
@@ -51,7 +53,6 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // Конец прыжка
         if (Input.GetKeyUp(KeyCode.Space) || Input.GetMouseButtonUp(0))
         {
             isJumping = false;
@@ -69,10 +70,25 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
 
-        // Сбрасываем прыжок при приземлении
         if (isGrounded)
         {
             isJumping = false;
+        }
+    }
+
+    void CheckFallDeath()
+    {
+        // Если игрок упал ниже пороговой высоты
+        if (transform.position.y < fallThreshold)
+        {
+            StopRunning();
+
+            // Сообщаем GameManager о завершении игры
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.GameOver();
+            }
         }
     }
 
@@ -86,6 +102,12 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Obstacle"))
         {
             StopRunning();
+
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.GameOver();
+            }
         }
     }
 
@@ -95,6 +117,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = Vector2.zero;
     }
 }
+
 
 //using UnityEngine;
 
