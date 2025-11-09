@@ -6,12 +6,16 @@ public class PlatformSpawner : MonoBehaviour
     [Header("Platform Settings")]
     public GameObject platformPrefab;
     public int platformCount = 5;
-    public float platformDistance = 3f;
+    public float platformDistance = 4f;
 
     [Header("Spawn Position")]
     public float spawnX = 15f;
-    public float minY = -2f;
+    public float minY = -1f;
     public float maxY = 2f;
+
+    [Header("Obstacle Settings")]
+    public GameObject obstaclePrefab;
+    public float obstacleSpawnChance = 0.3f; // 30% шанс появления препятствия
 
     private List<GameObject> platforms = new List<GameObject>();
     private Vector2 lastPlatformPosition;
@@ -49,6 +53,9 @@ public class PlatformSpawner : MonoBehaviour
 
         platforms.Add(platform);
         lastPlatformPosition = spawnPosition;
+
+        // Пытаемся создать препятствие на этой платформе
+        TrySpawnObstacle(spawnPosition);
     }
 
     void RecyclePlatform()
@@ -57,5 +64,16 @@ public class PlatformSpawner : MonoBehaviour
         GameObject platformToRemove = platforms[0];
         platforms.RemoveAt(0);
         Destroy(platformToRemove);
+    }
+
+    void TrySpawnObstacle(Vector2 platformPosition)
+    {
+        // Случайно решаем, создавать ли препятствие (30% шанс)
+        if (Random.Range(0f, 1f) < obstacleSpawnChance)
+        {
+            // Создаем препятствие на платформе (немного выше)
+            Vector2 obstaclePosition = platformPosition + new Vector2(0, 0.7f);
+            Instantiate(obstaclePrefab, obstaclePosition, Quaternion.identity);
+        }
     }
 }
