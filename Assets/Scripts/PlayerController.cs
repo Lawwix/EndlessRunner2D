@@ -3,20 +3,17 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float jumpForce = 16f;
-    public float runSpeed = 5f;
+    public float jumpForce = 16f; // УВЕЛИЧЕНО!
+    public float runSpeed = 3f;   // нормальная скорость
 
     [Header("Ground Check")]
     public Transform groundCheck;
     public float checkRadius = 0.2f;
     public LayerMask groundLayer;
 
-    [Header("Game Over Settings")]
-    public float fallThreshold = -10f;
-
     private Rigidbody2D rb;
     private bool isGrounded;
-    private bool isGameRunning = true;
+    private bool isGameRunning = true; // Добавляем контроль игры
 
     void Start()
     {
@@ -25,12 +22,11 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (!isGameRunning) return;
+        if (!isGameRunning) return; // Игра остановлена - выходим
 
         CheckGrounded();
-        CheckFallDeath();
 
-        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             Jump();
         }
@@ -38,7 +34,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!isGameRunning) return;
+        if (!isGameRunning) return; // Игра остановлена - не двигаемся
 
         rb.velocity = new Vector2(runSpeed, rb.velocity.y);
     }
@@ -46,19 +42,6 @@ public class PlayerController : MonoBehaviour
     void CheckGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
-    }
-
-    void CheckFallDeath()
-    {
-        if (transform.position.y < fallThreshold)
-        {
-            StopRunning();
-            GameManager gameManager = FindObjectOfType<GameManager>();
-            if (gameManager != null)
-            {
-                gameManager.GameOver();
-            }
-        }
     }
 
     void Jump()
@@ -71,6 +54,8 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Obstacle"))
         {
             StopRunning();
+
+            // Находим GameManager и сообщаем о Game Over
             GameManager gameManager = FindObjectOfType<GameManager>();
             if (gameManager != null)
             {
@@ -82,83 +67,20 @@ public class PlayerController : MonoBehaviour
     public void StopRunning()
     {
         isGameRunning = false;
-        rb.velocity = Vector2.zero;
+        rb.velocity = Vector2.zero; // Полная остановка
     }
 
-   
+    void CheckFallDeath()
+    {
+        if (transform.position.y < -5f)
+        {
+            StopRunning();
+
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.GameOver();
+            }
+        }
+    }
 }
-
-//using UnityEngine;
-
-//public class PlayerController : MonoBehaviour
-//{
-//    [Header("Movement Settings")]
-//    public float jumpForce = 10f;
-//    public float runSpeed = 5f; // Новая переменная для скорости бега
-
-//    [Header("Ground Check")]
-//    public Transform groundCheck;
-//    public float checkRadius = 0.2f;
-//    public LayerMask groundLayer;
-
-//    private Rigidbody2D rb;
-//    private bool isGrounded;
-//    private bool isGameRunning = true; // Контроль игры
-
-//    void Start()
-//    {
-//        // Получаем компонент Rigidbody2D
-//        rb = GetComponent<Rigidbody2D>();
-//    }
-
-//    void Update()
-//    {
-//        if (!isGameRunning) return;
-
-//        // Проверяем, стоит ли игрок на земле
-//        CheckGrounded();
-
-//        // Обрабатываем прыжок при нажатии пробела или клике мыши
-//        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-//        {
-//            Jump();
-//        }
-//    }
-
-//    void FixedUpdate()
-//    {
-//        if (!isGameRunning) return;
-
-//        // Постоянное движение вперед
-//        rb.velocity = new Vector2(runSpeed, rb.velocity.y);
-//    }
-
-//    void CheckGrounded()
-//    {
-//        // Проверяем, касается ли игрок земли
-//        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
-//    }
-
-//    void Jump()
-//    {
-//        // Применяем силу для прыжка
-//        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-//    }
-
-//    // Метод для остановки игрока (при столкновении с препятствием)
-//    public void StopRunning()
-//    {
-//        isGameRunning = false;
-//        rb.velocity = Vector2.zero;
-//    }
-
-//    void OnCollisionEnter2D(Collision2D collision)
-//    {
-//        // Проверяем столкновение с препятствием
-//        if (collision.gameObject.CompareTag("Obstacle"))
-//        {
-//            StopRunning();
-//            Debug.Log("Game Over! Hit obstacle");
-//        }
-//    }
-//}

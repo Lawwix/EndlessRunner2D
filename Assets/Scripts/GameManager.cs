@@ -6,24 +6,16 @@ public class GameManager : MonoBehaviour
     [Header("UI References")]
     public TextMeshProUGUI scoreText;
 
-    [Header("Game References")]
-    public PlayerController player;
-
-    [Header("Game Settings")]
-    public float scoreMultiplier = 1f;
-
     private int currentScore = 0;
     private bool isGameRunning = true;
     private float distanceTraveled = 0f;
     private Vector3 lastPlayerPosition;
+    private GameObject player;
 
     void Start()
     {
-        if (player == null)
-        {
-            player = FindObjectOfType<PlayerController>();
-        }
-
+        // Находим игрока
+        player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             lastPlayerPosition = player.transform.position;
@@ -36,6 +28,13 @@ public class GameManager : MonoBehaviour
     {
         if (!isGameRunning) return;
 
+        // Проверяем не упал ли игрок
+        if (player != null && player.transform.position.y < -5f)
+        {
+            GameOver();
+            return;
+        }
+
         CalculateScore();
     }
 
@@ -46,7 +45,7 @@ public class GameManager : MonoBehaviour
             distanceTraveled += (player.transform.position.x - lastPlayerPosition.x);
             lastPlayerPosition = player.transform.position;
 
-            int newScore = Mathf.FloorToInt(distanceTraveled * scoreMultiplier);
+            int newScore = Mathf.FloorToInt(distanceTraveled);
             if (newScore > currentScore)
             {
                 currentScore = newScore;
@@ -68,12 +67,25 @@ public class GameManager : MonoBehaviour
         if (!isGameRunning) return;
 
         isGameRunning = false;
-        Debug.Log($"Game Over! Final Score: {currentScore}");
+        Debug.Log($"=== GAME OVER ===");
+        Debug.Log($"Final Score: {currentScore}");
+        Debug.Log($"=== GAME OVER ===");
 
-        if (player != null)
+        // Останавливаем игрока
+        PlayerController playerController = FindObjectOfType<PlayerController>();
+        if (playerController != null)
         {
-            player.StopRunning();
+            playerController.StopRunning();
         }
+
+        // Останавливаем генерацию платформ
+        PlatformSpawner platformSpawner = FindObjectOfType<PlatformSpawner>();
+        if (platformSpawner != null)
+        {
+            platformSpawner.enabled = false;
+        }
+
+        // Можно добавить здесь вызов экрана Game Over позже
     }
 
     public void AddScore(int points)
