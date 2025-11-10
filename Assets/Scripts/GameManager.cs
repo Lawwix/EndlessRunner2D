@@ -1,21 +1,36 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     [Header("UI References")]
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI highScoreText; // Новое поле для рекорда в игре
+    public GameObject gameOverPanel;
+    public TextMeshProUGUI finalScoreText;
+    public TextMeshProUGUI finalHighScoreText; // Новое поле для рекорда на панели Game Over
+
+    [Header("Game References")]
+    public PlayerController player;
 
     private int currentScore = 0;
+    private int highScore = 0;
     private bool isGameRunning = true;
     private float distanceTraveled = 0f;
     private Vector3 lastPlayerPosition;
-    private GameObject player;
 
     void Start()
     {
-        // Находим игрока
-        player = GameObject.FindGameObjectWithTag("Player");
+        // Загружаем рекорд из памяти
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        UpdateHighScoreUI();
+
+        if (player == null)
+        {
+            player = FindObjectOfType<PlayerController>();
+        }
+
         if (player != null)
         {
             lastPlayerPosition = player.transform.position;
@@ -50,6 +65,13 @@ public class GameManager : MonoBehaviour
             {
                 currentScore = newScore;
                 UpdateScoreUI();
+
+                // Проверяем побит ли рекорд
+                if (currentScore > highScore)
+                {
+                    highScore = currentScore;
+                    UpdateHighScoreUI();
+                }
             }
         }
     }
@@ -62,11 +84,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void UpdateHighScoreUI()
+    {
+        if (highScoreText != null)
+        {
+            highScoreText.text = $"Best: {highScore}";
+        }
+    }
+
     public void GameOver()
     {
         if (!isGameRunning) return;
 
         isGameRunning = false;
+
+        // Сохраняем рекорд если он побит
+        if (currentScore > PlayerPrefs.GetInt("HighScore", 0))
+        {
+            PlayerPrefs.SetInt("HighScore", currentScore);
+            PlayerPrefs.Save();
+            Debug.Log($"New High Score: {currentScore}");
+        }
 
         // Воспроизводим звук Game Over
         AudioManager audioManager = FindObjectOfType<AudioManager>();
@@ -75,15 +113,27 @@ public class GameManager : MonoBehaviour
             audioManager.PlayGameOverSound();
         }
 
-        Debug.Log($"=== GAME OVER ===");
-        Debug.Log($"Final Score: {currentScore}");
-        Debug.Log($"=== GAME OVER ===");
+        // Показываем экран Game Over
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
+
+        // Обновляем текст счета и рекорда на панели Game Over
+        if (finalScoreText != null)
+        {
+            finalScoreText.text = $"Score: {currentScore}";
+        }
+
+        if (finalHighScoreText != null)
+        {
+            finalHighScoreText.text = $"Best: {PlayerPrefs.GetInt("HighScore", 0)}";
+        }
 
         // Останавливаем игрока
-        PlayerController playerController = FindObjectOfType<PlayerController>();
-        if (playerController != null)
+        if (player != null)
         {
-            playerController.StopRunning();
+            player.StopRunning();
         }
 
         // Останавливаем генерацию платформ
@@ -92,16 +142,15 @@ public class GameManager : MonoBehaviour
         {
             platformSpawner.enabled = false;
         }
-
-        // Можно добавить здесь вызов экрана Game Over позже
     }
 
-    public void AddScore(int points)
+    public void RestartGame()
     {
-        if (isGameRunning)
-        {
-            currentScore += points;
-            UpdateScoreUI();
-        }
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }
