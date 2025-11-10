@@ -101,6 +101,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacle"))
         {
+            // Столкновение с препятствием - Game Over
             AudioManager audioManager = AudioManager.Instance;
             if (audioManager != null)
             {
@@ -114,7 +115,51 @@ public class PlayerController : MonoBehaviour
                 gameManager.GameOver();
             }
         }
+        else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        {
+            // Столкновение с платформой сбоку - отталкиваем игрока
+            HandlePlatformSideCollision(collision);
+        }
     }
+
+    void HandlePlatformSideCollision(Collision2D collision)
+    {
+        // Проверяем что столкновение сбоку (не сверху)
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (Mathf.Abs(contact.normal.x) > 0.5f) // Столкновение сбоку
+            {
+                // Слегка отталкиваем игрока от платформы используя currentRunSpeed
+                rb.velocity = new Vector2(currentRunSpeed, rb.velocity.y);
+
+                // Можно добавить небольшой толчок вверх чтобы помочь игроку
+                if (isGrounded)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x, jumpForce * 0.3f);
+                }
+                break;
+            }
+        }
+    }
+
+    //void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    if (collision.gameObject.CompareTag("Obstacle"))
+    //    {
+    //        AudioManager audioManager = AudioManager.Instance;
+    //        if (audioManager != null)
+    //        {
+    //            audioManager.PlayGameOverSound();
+    //        }
+
+    //        StopRunning();
+    //        GameManager gameManager = FindObjectOfType<GameManager>();
+    //        if (gameManager != null)
+    //        {
+    //            gameManager.GameOver();
+    //        }
+    //    }
+    //}
 
     public void StopRunning()
     {
