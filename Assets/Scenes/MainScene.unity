@@ -633,13 +633,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   platformPrefab: {fileID: 8504428714133099392, guid: af7887fd2f2fc8c4c9c7a6c79c2d6230, type: 3}
-  platformCount: 8
+  platformCount: 12
   platformDistance: 7
   spawnX: 15
   minY: -0.5
   maxY: 1.5
   obstaclePrefab: {fileID: 3377122009454798594, guid: 2d273ec1aaac1f04c94c50f1d0a6eb66, type: 3}
-  obstacleSpawnChance: 0.8
+  initialObstacleChance: 0.5
+  maxObstacleChance: 0.8
+  obstacleIncreaseRate: 0.01
 --- !u!4 &669795736
 Transform:
   m_ObjectHideFlags: 0
@@ -1682,13 +1684,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   jumpForce: 16
-  runSpeed: 3
+  initialRunSpeed: 5
+  maxRunSpeed: 10
+  speedIncreaseRate: 0.1
   groundCheck: {fileID: 638938827}
   checkRadius: 0.1
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
-  audioManager: {fileID: 0}
+  fallThreshold: -10
 --- !u!50 &1572199603
 Rigidbody2D:
   serializedVersion: 4
@@ -1822,7 +1826,7 @@ Transform:
   m_GameObject: {fileID: 1572199601}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

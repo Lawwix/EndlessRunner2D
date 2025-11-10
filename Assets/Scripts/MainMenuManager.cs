@@ -5,16 +5,10 @@ using TMPro;
 public class MainMenuManager : MonoBehaviour
 {
     [Header("UI References")]
-    public TextMeshProUGUI highScoreText; // Поле для отображения рекорда
-
-    private AudioManager audioManager;
+    public TextMeshProUGUI highScoreText;
 
     void Start()
     {
-        // Находим AudioManager
-        audioManager = FindObjectOfType<AudioManager>();
-
-        // Показываем рекорд в меню
         UpdateHighScoreUI();
     }
 
@@ -29,25 +23,19 @@ public class MainMenuManager : MonoBehaviour
 
     public void StartGame()
     {
-        // Воспроизводим звук кнопки
-        if (audioManager != null)
+        if (AudioManager.Instance != null)
         {
-            audioManager.PlayButtonClickSound();
+            AudioManager.Instance.PlayButtonClickSound();
         }
-
-        Debug.Log("Starting game...");
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("MainScene");
     }
 
     public void QuitGame()
     {
-        // Воспроизводим звук кнопки
-        if (audioManager != null)
+        if (AudioManager.Instance != null)
         {
-            audioManager.PlayButtonClickSound();
+            AudioManager.Instance.PlayButtonClickSound();
         }
-
-        Debug.Log("Quitting game...");
         Application.Quit();
 
 #if UNITY_EDITOR
@@ -55,3 +43,61 @@ public class MainMenuManager : MonoBehaviour
 #endif
     }
 }
+
+//using UnityEngine;
+//using UnityEngine.SceneManagement;
+//using TMPro;
+
+//public class MainMenuManager : MonoBehaviour
+//{
+//    [Header("UI References")]
+//    public TextMeshProUGUI highScoreText; // Поле для отображения рекорда
+
+//    private AudioManager audioManager;
+
+//    void Start()
+//    {
+//        // Находим AudioManager
+//        audioManager = FindObjectOfType<AudioManager>();
+
+//        // Показываем рекорд в меню
+//        UpdateHighScoreUI();
+//    }
+
+//    void UpdateHighScoreUI()
+//    {
+//        if (highScoreText != null)
+//        {
+//            int highScore = PlayerPrefs.GetInt("HighScore", 0);
+//            highScoreText.text = $"Best Score: {highScore}";
+//        }
+//    }
+
+//    public void StartGame()
+//    {
+//        // Воспроизводим звук кнопки
+//        if (audioManager != null)
+//        {
+//            audioManager.PlayButtonClickSound();
+//        }
+
+//        Debug.Log("Starting game...");
+//        SceneManager.LoadScene("SampleScene");
+//    }
+
+//    public void QuitGame()
+//    {
+//        // Воспроизводим звук кнопки
+//        if (audioManager != null)
+//        {
+//            audioManager.PlayButtonClickSound();
+//        }
+
+//        Debug.Log("Quitting game...");
+//        Application.Quit();
+
+//#if UNITY_EDITOR
+//        UnityEditor.EditorApplication.isPlaying = false;
+//#endif
+//    }
+//}
