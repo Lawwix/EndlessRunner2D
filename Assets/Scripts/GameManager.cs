@@ -67,6 +67,14 @@ public class GameManager : MonoBehaviour
         if (!isGameRunning) return;
 
         isGameRunning = false;
+
+        // Воспроизводим звук Game Over
+        AudioManager audioManager = FindObjectOfType<AudioManager>();
+        if (audioManager != null)
+        {
+            audioManager.PlayGameOverSound();
+        }
+
         Debug.Log($"=== GAME OVER ===");
         Debug.Log($"Final Score: {currentScore}");
         Debug.Log($"=== GAME OVER ===");

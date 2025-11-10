@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     public float checkRadius = 0.2f;
     public LayerMask groundLayer;
 
+    [Header("Audio")]
+    public AudioManager audioManager;
+
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool isGameRunning = true; // Добавляем контроль игры
@@ -18,7 +21,14 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // Находим AudioManager если не назначен
+        if (audioManager == null)
+        {
+            audioManager = FindObjectOfType<AudioManager>();
+        }
     }
+
 
     void Update()
     {
@@ -47,15 +57,25 @@ public class PlayerController : MonoBehaviour
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+        // Воспроизводим звук прыжка
+        if (audioManager != null)
+        {
+            audioManager.PlayJumpSound();
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            StopRunning();
+            // Воспроизводим звук Game Over
+            if (audioManager != null)
+            {
+                audioManager.PlayGameOverSound();
+            }
 
-            // Находим GameManager и сообщаем о Game Over
+            StopRunning();
             GameManager gameManager = FindObjectOfType<GameManager>();
             if (gameManager != null)
             {

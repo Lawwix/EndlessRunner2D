@@ -3,24 +3,37 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
-    // Этот метод будет вызываться при нажатии кнопки "Start Game"
+    private AudioManager audioManager;
+
+    void Start()
+    {
+        // Находим AudioManager
+        audioManager = FindObjectOfType<AudioManager>();
+    }
+
     public void StartGame()
     {
-        Debug.Log("Starting game...");
+        // Воспроизводим звук кнопки
+        if (audioManager != null)
+        {
+            audioManager.PlayButtonClickSound();
+        }
 
-        // Загружаем игровую сцену по имени
+        Debug.Log("Starting game...");
         SceneManager.LoadScene("SampleScene");
     }
 
-    // Этот метод будет вызываться при нажатии кнопки "Quit"
     public void QuitGame()
     {
-        Debug.Log("Quitting game...");
+        // Воспроизводим звук кнопки
+        if (audioManager != null)
+        {
+            audioManager.PlayButtonClickSound();
+        }
 
-        // Завершаем приложение
+        Debug.Log("Quitting game...");
         Application.Quit();
 
-        // Для тестирования в редакторе Unity
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
