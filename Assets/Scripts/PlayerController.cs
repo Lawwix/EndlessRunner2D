@@ -4,42 +4,29 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float jumpForce = 16f;
-    public float initialRunSpeed = 5f;
-    public float maxRunSpeed = 10f;
-    public float speedIncreaseRate = 0.1f;
+    public float runSpeed = 5f;
 
     [Header("Ground Check")]
     public Transform groundCheck;
-    public float checkRadius = 0.2f;
+    public float checkRadius = 0.3f;
     public LayerMask groundLayer;
-
-    [Header("Game Over Settings")]
-    public float fallThreshold = -10f;
 
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool isGameRunning = true;
-    private float currentRunSpeed;
-    private float gameTime;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        currentRunSpeed = initialRunSpeed;
-        gameTime = 0f;
-
         if (rb != null)
         {
             rb.freezeRotation = true;
         }
-        transform.rotation = Quaternion.identity;
     }
 
     void Update()
     {
         if (!isGameRunning) return;
-
-        gameTime += Time.deltaTime;
 
         CheckGrounded();
         CheckFallDeath();
@@ -54,17 +41,8 @@ public class PlayerController : MonoBehaviour
     {
         if (!isGameRunning) return;
 
-        IncreaseSpeedOverTime();
-        rb.velocity = new Vector2(currentRunSpeed, rb.velocity.y);
-    }
-
-    void IncreaseSpeedOverTime()
-    {
-        if (currentRunSpeed < maxRunSpeed)
-        {
-            currentRunSpeed = initialRunSpeed + (gameTime * speedIncreaseRate);
-            currentRunSpeed = Mathf.Min(currentRunSpeed, maxRunSpeed);
-        }
+        // Постоянное движение вперед
+        rb.velocity = new Vector2(runSpeed, rb.velocity.y);
     }
 
     void CheckGrounded()
@@ -74,14 +52,9 @@ public class PlayerController : MonoBehaviour
 
     void CheckFallDeath()
     {
-        if (transform.position.y < fallThreshold)
+        if (transform.position.y < -10f)
         {
-            StopRunning();
-            GameManager gameManager = FindObjectOfType<GameManager>();
-            if (gameManager != null)
-            {
-                gameManager.GameOver();
-            }
+            GameOver();
         }
     }
 
@@ -89,82 +62,57 @@ public class PlayerController : MonoBehaviour
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
 
-        // Находим AudioManager автоматически
-        AudioManager audioManager = AudioManager.Instance;
-        if (audioManager != null)
+        if (AudioManager.Instance != null)
         {
-            audioManager.PlayJumpSound();
+            AudioManager.Instance.PlayJumpSound();
         }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!isGameRunning) return;
+
+        // ЛЮБОЕ столкновение с Obstacle = Game Over
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            // Столкновение с препятствием - Game Over
-            AudioManager audioManager = AudioManager.Instance;
-            if (audioManager != null)
-            {
-                audioManager.PlayGameOverSound();
-            }
-
-            StopRunning();
-            GameManager gameManager = FindObjectOfType<GameManager>();
-            if (gameManager != null)
-            {
-                gameManager.GameOver();
-            }
+            GameOver();
+            return;
         }
-        else if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
-        {
-            // Столкновение с платформой сбоку - отталкиваем игрока
-            HandlePlatformSideCollision(collision);
-        }
-    }
 
-    void HandlePlatformSideCollision(Collision2D collision)
-    {
-        // Проверяем что столкновение сбоку (не сверху)
-        foreach (ContactPoint2D contact in collision.contacts)
+        // Столкновение с платформой сбоку = Game Over
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
-            if (Mathf.Abs(contact.normal.x) > 0.5f) // Столкновение сбоку
+            foreach (ContactPoint2D contact in collision.contacts)
             {
-                // Слегка отталкиваем игрока от платформы используя currentRunSpeed
-                rb.velocity = new Vector2(currentRunSpeed, rb.velocity.y);
-
-                // Можно добавить небольшой толчок вверх чтобы помочь игроку
-                if (isGrounded)
+                // Если нормаль указывает в сторону (столкновение сбоку)
+                if (Mathf.Abs(contact.normal.x) > 0.7f)
                 {
-                    rb.velocity = new Vector2(rb.velocity.x, jumpForce * 0.3f);
+                    GameOver();
+                    return;
                 }
-                break;
             }
         }
     }
 
-    //void OnCollisionEnter2D(Collision2D collision)
-    //{
-    //    if (collision.gameObject.CompareTag("Obstacle"))
-    //    {
-    //        AudioManager audioManager = AudioManager.Instance;
-    //        if (audioManager != null)
-    //        {
-    //            audioManager.PlayGameOverSound();
-    //        }
-
-    //        StopRunning();
-    //        GameManager gameManager = FindObjectOfType<GameManager>();
-    //        if (gameManager != null)
-    //        {
-    //            gameManager.GameOver();
-    //        }
-    //    }
-    //}
-
-    public void StopRunning()
+    void GameOver()
     {
+        if (!isGameRunning) return;
+
         isGameRunning = false;
         rb.velocity = Vector2.zero;
+
+        // Звук Game Over
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayGameOverSound();
+        }
+
+        // Вызов Game Over в GameManager
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.GameOver();
+        }
     }
 
     void OnDrawGizmosSelected()
@@ -176,6 +124,73 @@ public class PlayerController : MonoBehaviour
         }
     }
 }
+
+//using UnityEngine;
+
+//public class PlayerController : MonoBehaviour
+//{
+//    public float jumpForce = 16f;
+//    public float runSpeed = 5f;
+//    public Transform groundCheck;
+//    public float checkRadius = 0.3f;
+//    public LayerMask groundLayer;
+
+//    private Rigidbody2D rb;
+//    private bool isGrounded;
+
+//    void Start()
+//    {
+//        rb = GetComponent<Rigidbody2D>();
+//        if (rb != null) rb.freezeRotation = true;
+//    }
+
+//    void Update()
+//    {
+//        // Проверяем землю под ногами
+//        isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
+
+//        // Прыжок
+//        if ((Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)) && isGrounded)
+//        {
+//            Jump();
+//        }
+
+//        // Проверка падения
+//        if (transform.position.y < -10f)
+//        {
+//            FindObjectOfType<GameManager>()?.GameOver();
+//        }
+//    }
+
+//    void FixedUpdate()
+//    {
+//        // Постоянное движение вперед
+//        if (rb != null)
+//        {
+//            rb.velocity = new Vector2(runSpeed, rb.velocity.y);
+//        }
+//    }
+
+//    void Jump()
+//    {
+//        rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+//        AudioManager.Instance?.PlayJumpSound();
+//    }
+
+//    void OnCollisionEnter2D(Collision2D collision)
+//    {
+//        if (collision.gameObject.CompareTag("Obstacle"))
+//        {
+//            AudioManager.Instance?.PlayGameOverSound();
+//            FindObjectOfType<GameManager>()?.GameOver();
+//        }
+//    }
+
+//    public void StopRunning()
+//    {
+//        if (rb != null) rb.velocity = Vector2.zero;
+//    }
+//}
 
 //using UnityEngine;
 

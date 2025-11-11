@@ -5,7 +5,7 @@ public class PlatformSpawner : MonoBehaviour
 {
     [Header("Platform Settings")]
     public GameObject platformPrefab;
-    public int platformCount = 12;
+    public int platformCount = 100;
     public float platformDistance = 6f;
 
     [Header("Spawn Position")]

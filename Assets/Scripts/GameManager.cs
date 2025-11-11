@@ -122,10 +122,10 @@ public class GameManager : MonoBehaviour
             finalHighScoreText.text = $"Best: {PlayerPrefs.GetInt("HighScore", 0)}";
         }
 
-        if (player != null)
-        {
-            player.StopRunning();
-        }
+        //if (player != null)
+        //{
+        //    player.StopRunning();
+        //}
 
         PlatformSpawner platformSpawner = FindObjectOfType<PlatformSpawner>();
         if (platformSpawner != null)
